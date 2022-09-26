@@ -1,0 +1,45 @@
+blueprint:
+  name: Door Notification
+  description: 'Send a notification to Matrix when a door is opened.'
+
+  domain: automation
+
+  input:
+    trigger_sensor:
+      name: Trigger Sensor
+      description: Sensor responsible for triggering notification
+      selector:
+        entity:
+          domain: binary_sensor
+          device_class: door
+          multiple: false
+    delay:
+      name: Delay (Optional)
+      description: Wait time before notification is triggered
+      default: ''
+      selector:
+        number:
+          min: 0.0
+          max: 60.0
+          unit_of_measurement: seconds
+          mode: slider
+          step: 1.0
+
+trigger:
+- platform: state
+  entity_id: !input trigger_sensor
+  attribute: contact
+  from: Closed
+  to: Open
+
+variables:
+  trigger_sensor: !input trigger_sensor
+  trigger_sensor_name: '{{ states[trigger_sensor].name }}'
+
+action:
+- delay: !input delay
+- service: notify.matrix_notify
+  data:
+    message: "'{{ trigger_sensor_name }}' is open!"
+
+mode: single
