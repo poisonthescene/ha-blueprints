@@ -1,0 +1,50 @@
+blueprint:
+  name: Camera Motion Matrix Notify
+  description: 'When a camera detects motion, take a snapshot and send it in a Matrix notification.'
+
+  domain: automation
+
+  input:
+    camera:
+      name: Camera
+      description: The camera that creates the snapshot
+      selector:
+        entity:
+          domain: camera
+          multiple: false
+    motion_sensor:
+      name: Motion Sensor
+      description: Sensor that triggers the snapshot
+      selector:
+        entity:
+          domain: binary_sensor
+          device_class: motion
+          multiple: false
+    message:
+      name: Message Body
+      description: The notification text that accompanies the shapshot
+      default: 'Movement detected at {{ motion_sensor_name }}!'
+
+  variables:
+    snapshot_filename: /config/www/tmp/snapshot_states[camera].object_id_{{ now().strftime("%Y%m%d-%H%M%S") }}.jpg
+    motion_sensor_name: '{{ states[motion_sensor].name }}'
+
+
+  trigger:
+    platform: state
+    entity_id: !input motion_sensor
+    from: 'off'
+    to: 'on'
+
+  action:
+    service: camera.snapshot
+    target:
+      entity_id: !input camera
+    data:
+      filename: '{{ snapshot_filename }}'
+    service: notify.matrix_notify
+    data:
+      message: !input message
+      data:
+        images:
+          - '{{ snapshot_filename }}'
