@@ -26,7 +26,7 @@ blueprint:
       default: 'Movement detected at {{ motion_sensor_name }}!'
 
 variables:
-  snapshot_filename: /config/www/tmp/snapshot_states[camera].object_id_{{ now().strftime("%Y%m%d-%H%M%S") }}.jpg
+  snapshot_filename: /config/www/tmp/snapshot_{{ states[camera].object_id }}_{{ now().strftime("%Y%m%d-%H%M%S") }}.jpg
   motion_sensor_name: '{{ states[motion_sensor].name }}'
 
 trigger:
