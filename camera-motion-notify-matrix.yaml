@@ -25,26 +25,25 @@ blueprint:
       description: The notification text that accompanies the shapshot
       default: 'Movement detected at {{ motion_sensor_name }}!'
 
-  variables:
-    snapshot_filename: /config/www/tmp/snapshot_states[camera].object_id_{{ now().strftime("%Y%m%d-%H%M%S") }}.jpg
-    motion_sensor_name: '{{ states[motion_sensor].name }}'
+variables:
+  snapshot_filename: /config/www/tmp/snapshot_states[camera].object_id_{{ now().strftime("%Y%m%d-%H%M%S") }}.jpg
+  motion_sensor_name: '{{ states[motion_sensor].name }}'
 
+trigger:
+  platform: state
+  entity_id: !input motion_sensor
+  from: 'off'
+  to: 'on'
 
-  trigger:
-    platform: state
-    entity_id: !input motion_sensor
-    from: 'off'
-    to: 'on'
-
-  action:
-    service: camera.snapshot
-    target:
-      entity_id: !input camera
+action:
+  service: camera.snapshot
+  target:
+    entity_id: !input camera
+  data:
+    filename: '{{ snapshot_filename }}'
+  service: notify.matrix_notify
+  data:
+    message: !input message
     data:
-      filename: '{{ snapshot_filename }}'
-    service: notify.matrix_notify
-    data:
-      message: !input message
-      data:
-        images:
-          - '{{ snapshot_filename }}'
+      images:
+        - '{{ snapshot_filename }}'
